@@ -78,6 +78,31 @@
   [self publishWithEvent:finalEvent];
 }
 
+- (void)publishEventsForFinishedTests
+{
+  if (!_isStarted) {
+    NSDictionary *event =
+      EventDictionaryWithNameAndContent(kReporter_Events_BeginTestSuite,
+        @{kReporter_BeginTestSuite_SuiteKey:self.testName});
+    [self beginTestSuite:event];
+  }
+
+  [[self finishedTests] makeObjectsPerformSelector:@selector(publishEvents)];
+
+  if (!_isFinished && [[self unstartedTests] count] == 0) {
+    NSDictionary *event =
+      EventDictionaryWithNameAndContent(kReporter_Events_EndTestSuite, @{
+        kReporter_EndTestSuite_SuiteKey:self.testName,
+        kReporter_EndTestSuite_TestCaseCountKey:@([self testCount]),
+        kReporter_EndTestSuite_TotalFailureCountKey:@([self totalFailures]),
+        kReporter_EndTestSuite_UnexpectedExceptionCountKey:@([self totalErrors]),
+        kReporter_EndTestSuite_TotalDurationKey:@([self totalDuration]),
+        kReporter_EndTestSuite_TestDurationKey:@([self testDuration]),
+      });
+    [self endTestSuite:event];
+  }
+}
+
 - (void)publishEvents
 {
   if (!_isStarted) {
@@ -87,7 +112,7 @@
     [self beginTestSuite:event];
   }
 
-  [_tests makeObjectsPerformSelector:@selector(publishEvents)];
+  [[self tests] makeObjectsPerformSelector:@selector(publishEvents)];
 
   if (!_isFinished) {
     NSDictionary *event =
@@ -190,8 +215,7 @@
 {
   double __block total = 0.0;
 
-  [_tests
-   enumerateObjectsUsingBlock:^(OCTestEventState *state, NSUInteger idx, BOOL *stop) {
+  [_tests enumerateObjectsUsingBlock:^(OCTestEventState *state, NSUInteger idx, BOOL *stop) {
      total += state.duration;
    }];
 
