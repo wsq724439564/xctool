@@ -18,6 +18,15 @@
 #import "OCTestSuiteEventState.h"
 #import "ReporterEvents.h"
 
+@interface OCTestSuiteEventState ()
+{
+  double _totalDuration;
+}
+
+@property (nonatomic, retain) NSDictionary *beginTestSuiteInfo;
+
+@end
+
 @implementation OCTestSuiteEventState
 
 - (instancetype)initWithName:(NSString *)name
@@ -40,35 +49,48 @@
 {
   [_testName release];
   [_tests release];
+  [_beginTestSuiteInfo release];
   [super dealloc];
 }
 
-- (void)beginTestSuite
+- (void)beginTestSuite:(NSDictionary *)event
 {
   NSAssert(!_isStarted, @"Test should not have started yet.");
   _isStarted = true;
+  self.beginTestSuiteInfo = event;
+
+  [self publishWithEvent:event];
 }
 
-- (void)endTestSuite
+- (void)endTestSuite:(NSDictionary *)event
 {
   NSAssert(_isStarted, @"Test must have already started.");
   _isFinished = true;
+
+  _totalDuration = [event[kReporter_TimestampKey] doubleValue] - [_beginTestSuiteInfo[kReporter_TimestampKey] doubleValue];
+
+  NSMutableDictionary *finalEvent = [[event mutableCopy] autorelease];
+  finalEvent[kReporter_EndTestSuite_TestCaseCountKey] = @([self testCount]);
+  finalEvent[kReporter_EndTestSuite_TotalFailureCountKey] = @([self totalFailures]);
+  finalEvent[kReporter_EndTestSuite_UnexpectedExceptionCountKey] = @([self totalErrors]);
+  finalEvent[kReporter_EndTestSuite_TestDurationKey] = @([self testDuration]);
+  finalEvent[kReporter_EndTestSuite_TotalDurationKey] = @([self totalDuration]);
+  [self publishWithEvent:finalEvent];
 }
 
 - (void)publishEvents
 {
   if (!_isStarted) {
-    [self publishWithEvent:
+    NSDictionary *event =
       EventDictionaryWithNameAndContent(kReporter_Events_BeginTestSuite,
-        @{kReporter_BeginTestSuite_SuiteKey:self.testName})
-    ];
-    [self beginTestSuite];
+        @{kReporter_BeginTestSuite_SuiteKey:self.testName});
+    [self beginTestSuite:event];
   }
 
   [_tests makeObjectsPerformSelector:@selector(publishEvents)];
 
   if (!_isFinished) {
-    [self publishWithEvent:
+    NSDictionary *event =
       EventDictionaryWithNameAndContent(kReporter_Events_EndTestSuite, @{
         kReporter_EndTestSuite_SuiteKey:self.testName,
         kReporter_EndTestSuite_TestCaseCountKey:@([self testCount]),
@@ -76,8 +98,8 @@
         kReporter_EndTestSuite_UnexpectedExceptionCountKey:@([self totalErrors]),
         kReporter_EndTestSuite_TotalDurationKey:@([self totalDuration]),
         kReporter_EndTestSuite_TestDurationKey:@([self testDuration]),
-    })];
-    [self endTestSuite];
+    });
+    [self endTestSuite:event];
   }
 }
 
@@ -178,7 +200,7 @@
 
 - (double)totalDuration
 {
-  return [self testDuration];
+  return _totalDuration;
 }
 
 - (unsigned int)testCount
