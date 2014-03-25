@@ -269,6 +269,7 @@
   }
 
   if (!success) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
@@ -290,8 +291,10 @@
   }
 
   if (self.failOnWarnings) {
+    [self sendUserNotificaitonActionSucceededStatus:!haveFoundWarnings options:options];
     return !haveFoundWarnings;
   } else {
+    [self sendUserNotificaitonActionSucceededStatus:YES options:options];
     return YES;
   }
 }

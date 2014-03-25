@@ -34,10 +34,13 @@
                                                                                         xcodeSubjectInfo:xcodeSubjectInfo]]
                         arrayByAddingObject:@"build"];
 
-  return RunXcodebuildAndFeedEventsToReporters(arguments,
-                                               @"build",
-                                               [options scheme],
-                                               [options reporters]);
+  BOOL result = RunXcodebuildAndFeedEventsToReporters(arguments,
+                                                      @"build",
+                                                      [options scheme],
+                                                      [options reporters]);
+  
+  [self sendUserNotificaitonActionSucceededStatus:result options:options];
+  return result;
 }
 
 @end

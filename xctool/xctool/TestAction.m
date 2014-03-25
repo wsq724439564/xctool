@@ -203,13 +203,16 @@
 - (BOOL)performActionWithOptions:(Options *)options xcodeSubjectInfo:(XcodeSubjectInfo *)xcodeSubjectInfo
 {
   if (![_buildTestsAction performActionWithOptions:options xcodeSubjectInfo:xcodeSubjectInfo]) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
   if (![_runTestsAction performActionWithOptions:options xcodeSubjectInfo:xcodeSubjectInfo]) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
+  [self sendUserNotificaitonActionSucceededStatus:YES options:options];
   return YES;
 }
 

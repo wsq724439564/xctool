@@ -19,6 +19,9 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 
+#import "Options.h"
+#import "UserNotifier.h"
+
 @class Options;
 
 @implementation Action
@@ -235,6 +238,25 @@
 - (BOOL)performActionWithOptions:(Options *)options xcodeSubjectInfo:(XcodeSubjectInfo *)xcodeSubjectInfo
 {
   return YES;
+}
+
+- (void)sendUserNotificaitonActionSucceededStatus:(BOOL)succedeed options:(Options *)options
+{
+  [self sendUserNotificaitonWithActionStatus:succedeed ? @"Succeeded" : @"Failed" options:options];
+}
+
+- (void)sendUserNotificaitonWithActionStatus:(NSString *)status options:(Options *)options
+{
+  NSString *projectName;
+  if (options.workspace) {
+    projectName = [[options.workspace lastPathComponent] stringByDeletingPathExtension];
+  } else {
+    projectName = [[options.project lastPathComponent] stringByDeletingPathExtension];
+  }
+
+  [UserNotifier sendNotificationWithTitle:[NSString stringWithFormat:@"%@ %@", [[[self class] name] capitalizedString], status]
+                                 subtitle:[NSString stringWithFormat:@"%@ | %@ Scheme", projectName, options.scheme]
+                                  message:nil];
 }
 
 @end

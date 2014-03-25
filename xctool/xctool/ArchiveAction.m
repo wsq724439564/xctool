@@ -29,10 +29,12 @@
     [arguments addObjectsFromArray:@[@"-archivePath", _archivePath]];
   }
 
-  return RunXcodebuildAndFeedEventsToReporters(arguments,
-                                               @"archive",
-                                               [options scheme],
-                                               [options reporters]);
+  BOOL result = RunXcodebuildAndFeedEventsToReporters(arguments,
+                                                      @"archive",
+                                                      [options scheme],
+                                                      [options reporters]);
+  [self sendUserNotificaitonActionSucceededStatus:result options:options];
+  return result;
 }
 
 + (NSArray *)options

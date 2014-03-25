@@ -41,6 +41,7 @@
                                              @"clean",
                                              [options scheme],
                                              [options reporters])) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
@@ -51,9 +52,11 @@
                                 command:@"clean"
                                 options:options
                        xcodeSubjectInfo:xcodeSubjectInfo]) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
+  [self sendUserNotificaitonActionSucceededStatus:YES options:options];
   return YES;
 }
 

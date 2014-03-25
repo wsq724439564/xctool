@@ -68,4 +68,7 @@
 
 - (BOOL)performActionWithOptions:(Options *)options xcodeSubjectInfo:(XcodeSubjectInfo *)xcodeSubjectInfo;
 
+- (void)sendUserNotificaitonActionSucceededStatus:(BOOL)succedeed options:(Options *)options;
+- (void)sendUserNotificaitonWithActionStatus:(NSString *)status options:(Options *)options;
+
 @end

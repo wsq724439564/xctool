@@ -308,9 +308,11 @@ NSArray *BucketizeTestCasesByTestClass(NSArray *testCases, int bucketSize)
   if (![self runTestables:testables
                   options:options
          xcodeSubjectInfo:xcodeSubjectInfo]) {
+    [self sendUserNotificaitonActionSucceededStatus:NO options:options];
     return NO;
   }
 
+  [self sendUserNotificaitonActionSucceededStatus:YES options:options];
   return YES;
 }
 
